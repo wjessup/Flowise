@@ -4,93 +4,98 @@
  */
 
 export default function themePalette(theme) {
-    return {
-        mode: theme?.customization?.navType,
+    const customization = theme?.customization || {};
+    const colors = theme?.colors || {};
+
+    const palette = {
+        mode: customization?.navType,
         common: {
-            black: theme.colors?.darkPaper
+            black: colors?.darkPaper
         },
         primary: {
-            light: theme.customization.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.primaryLight,
-            main: theme.colors?.primaryMain,
-            dark: theme.customization.isDarkMode ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark,
-            200: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.primary200,
-            800: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primary800
+            light: customization.isDarkMode ? colors?.darkPrimaryLight : colors?.primaryLight,
+            main: colors?.primaryMain,
+            dark: customization.isDarkMode ? colors?.darkPrimaryDark : colors?.primaryDark,
+            200: customization.isDarkMode ? colors?.darkPrimary200 : colors?.primary200,
+            800: customization.isDarkMode ? colors?.darkPrimary800 : colors?.primary800
         },
         secondary: {
-            light: theme.customization.isDarkMode ? theme.colors?.darkSecondaryLight : theme.colors?.secondaryLight,
-            main: theme.customization.isDarkMode ? theme.colors?.darkSecondaryMain : theme.colors?.secondaryMain,
-            dark: theme.customization.isDarkMode ? theme.colors?.darkSecondaryDark : theme.colors?.secondaryDark,
-            200: theme.colors?.secondary200,
-            800: theme.colors?.secondary800
+            light: customization.isDarkMode ? colors?.darkSecondaryLight : colors?.secondaryLight,
+            main: customization.isDarkMode ? colors?.darkSecondaryMain : colors?.secondaryMain,
+            dark: customization.isDarkMode ? colors?.darkSecondaryDark : colors?.secondaryDark,
+            200: colors?.secondary200,
+            800: colors?.secondary800
         },
         error: {
-            light: theme.colors?.errorLight,
-            main: theme.colors?.errorMain,
-            dark: theme.colors?.errorDark
+            light: colors?.errorLight,
+            main: colors?.errorMain,
+            dark: colors?.errorDark
         },
         orange: {
-            light: theme.colors?.orangeLight,
-            main: theme.colors?.orangeMain,
-            dark: theme.colors?.orangeDark
+            light: colors?.orangeLight,
+            main: colors?.orangeMain,
+            dark: colors?.orangeDark
         },
         warning: {
-            light: theme.colors?.warningLight,
-            main: theme.colors?.warningMain,
-            dark: theme.colors?.warningDark
+            light: colors?.warningLight,
+            main: colors?.warningMain,
+            dark: colors?.warningDark
         },
         success: {
-            light: theme.colors?.successLight,
-            200: theme.colors?.success200,
-            main: theme.colors?.successMain,
-            dark: theme.colors?.successDark
+            light: colors?.successLight,
+            200: colors?.success200,
+            main: colors?.successMain,
+            dark: colors?.successDark
         },
         grey: {
-            50: theme.colors?.grey50,
-            100: theme.colors?.grey100,
-            200: theme.colors?.grey200,
-            300: theme.colors?.grey300,
-            500: theme.darkTextSecondary,
+            50: colors?.grey50,
+            100: colors?.grey100,
+            200: colors?.grey200,
+            300: colors?.grey300,
+            500: colors?.darkTextSecondary,
             600: theme.heading,
-            700: theme.darkTextPrimary,
+            700: colors?.darkTextPrimary,
             900: theme.textDark
         },
         dark: {
-            light: theme.colors?.darkTextPrimary,
-            main: theme.colors?.darkLevel1,
-            dark: theme.colors?.darkLevel2,
-            800: theme.colors?.darkBackground,
-            900: theme.colors?.darkPaper
+            light: colors?.darkTextPrimary,
+            main: colors?.darkLevel1,
+            dark: colors?.darkLevel2,
+            800: colors?.darkBackground || color?.primaryDark,
+            900: colors?.darkPaper || colors?.darkLevel1
         },
         text: {
-            primary: theme.darkTextPrimary,
-            secondary: theme.darkTextSecondary,
+            primary: colors?.darkTextPrimary,
+            secondary: colors?.darkTextSecondary,
             dark: theme.textDark,
-            hint: theme.colors?.grey100
+            hint: colors?.grey100
         },
         background: {
             paper: theme.paper,
             default: theme.backgroundDefault
         },
         card: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimaryMain : theme.colors?.paper,
-            light: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.paper,
-            hover: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.paper
+            main: customization.isDarkMode ? colors?.darkPrimaryMain : colors?.paper,
+            light: customization.isDarkMode ? colors?.darkPrimary200 : colors?.paper,
+            hover: customization.isDarkMode ? colors?.darkPrimary800 : colors?.paper
         },
         asyncSelect: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.grey50
+            main: customization.isDarkMode ? colors?.darkPrimary800 : colors?.grey50
         },
         canvasHeader: {
-            executionLight: theme.colors?.successLight,
-            executionDark: theme.colors?.successDark,
-            deployLight: theme.colors?.primaryLight,
-            deployDark: theme.colors?.primaryDark,
-            saveLight: theme.colors?.secondaryLight,
-            saveDark: theme.colors?.secondaryDark,
-            settingsLight: theme.colors?.grey300,
-            settingsDark: theme.colors?.grey700
+            executionLight: colors?.successLight,
+            executionDark: colors?.successDark,
+            deployLight: colors?.primaryLight,
+            deployDark: colors?.primaryDark,
+            saveLight: colors?.secondaryLight,
+            saveDark: colors?.secondaryDark,
+            settingsLight: colors?.grey300,
+            settingsDark: colors?.grey700
         },
         codeEditor: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primaryLight
+            main: customization.isDarkMode ? colors?.darkPrimary800 : colors?.primaryLight
         }
-    }
+    };
+
+    return palette;
 }
