@@ -20,23 +20,88 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 
 // ===========================|| NodeInputHandler ||=========================== //
 
-const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
+const const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
     const theme = useTheme()
-    const ref = useRef(null)
-    const updateNodeInternals = useUpdateNodeInternals()
-    const [position, setPosition] = useState(0)
+    const ref = useRef()
     const { reactFlowInstance } = useContext(flowContext)
 
-    useEffect(() => {
-        if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
-            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
-            updateNodeInternals(data.id)
-        }
-    }, [data.id, ref, updateNodeInternals])
+    const updateNodeInternals = useCallback(() => {
+        updateNodeInternals(data.id)
+    }, [data.id, updateNodeInternals])
 
     useEffect(() => {
-        updateNodeInternals(data.id)
-    }, [data.id, position, updateNodeInternals])
+        const element = ref.current;
+        if (element) {
+            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
+            updateNodeInternals(data.id)
+
+            const handleResize = debounce(() => { setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)}, 500);
+            window.addEventListener("resize", handleResize);
+            return () => window.removeEventListener("resize", handleResize);
+        }
+    }, [data.id, ref, theme.palette.primary.main, theme.palette.text.secondary, updateNodeInternals]);
+
+    let inputComponent = null;
+
+    if (inputParam) {
+        const inputDefault = inputParam.default;
+        const inputValue = data.inputs[inputParam.name];
+        const combinedValue = inputValue || inputDefault || '';
+
+        const onChangeHandler = newValue => {
+            data.inputs[inputParam.name] = newValue;
+            updateNodeInternals();
+        }
+
+        switch (inputParam.type) {
+            case 'file':
+                inputComponent = (
+                    <File
+                        disabled={disabled}
+                        fileType={inputParam.fileType || '*'}
+                        value={combinedValue}
+                        onChange={newValue => onChangeHandler(newValue)}
+                    />
+                );
+                break;
+            case 'string':
+            case 'password':
+                inputComponent = (
+                    <Input
+                        disabled={disabled}
+                        inputParam={inputParam}
+                        value={combinedValue}
+                        onChange={newValue => onChangeHandler(newValue)}
+                        type={inputParam.type === 'password' ? 'password' : 'text'}
+                    />
+                );
+                break;
+            case 'number':
+                inputComponent = (
+                    <Input
+                        disabled={disabled}
+                        inputParam={inputParam}
+                        value={combinedValue}
+                        onChange={newValue => onChangeHandler(+newValue)}
+                        type='number'
+                    />
+                );
+                break;
+            case 'options':
+                inputComponent = (
+                    <Dropdown
+                        disabled={disabled}
+                        name={inputParam.name}
+                        value={combinedValue}
+                        options={inputParam.options}
+                        onSelect={newValue => onChangeHandler(newValue)}
+                    />
+                );
+                break;
+            default:
+                break;
+        }
+    }
 
     return (
         <div ref={ref}>
@@ -48,7 +113,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
                             position={Position.Left}
                             key={inputAnchor.id}
                             id={inputAnchor.id}
-                            isValidConnection={(connection) => isValidConnection(connection, reactFlowInstance)}
+                            isValidConnection={connection => isValidConnection(connection, reactFlowInstance)}
                             style={{
                                 height: 10,
                                 width: 10,
@@ -67,43 +132,17 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
             )}
 
             {inputParam && (
-                <>
-                    <Box sx={{ p: 2 }}>
-                        <Typography>
-                            {inputParam.label}
-                            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                        </Typography>
-                        {inputParam.type === 'file' && (
-                            <File
-                                disabled={disabled}
-                                fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
-                            />
-                        )}
-                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                            <Input
-                                disabled={disabled}
-                                inputParam={inputParam}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                            />
-                        )}
-                        {inputParam.type === 'options' && (
-                            <Dropdown
-                                disabled={disabled}
-                                name={inputParam.name}
-                                options={inputParam.options}
-                                onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'chose an option'}
-                            />
-                        )}
-                    </Box>
-                </>
+                <Box sx={{ p: 2 }}>
+                    <Typography>
+                        {inputParam.label}
+                        {inputParam.optional === false && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                    </Typography>
+                    {inputComponent}
+                </Box>
             )}
         </div>
-    )
-}
+    );
+};
 
 NodeInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
