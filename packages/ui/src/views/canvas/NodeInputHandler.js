@@ -20,90 +20,121 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 
 // ===========================|| NodeInputHandler ||=========================== //
 
-const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
-    const theme = useTheme()
-    const ref = useRef(null)
-    const updateNodeInternals = useUpdateNodeInternals()
-    const [position, setPosition] = useState(0)
-    const { reactFlowInstance } = useContext(flowContext)
+const const getNodePosition = (ref) => {
+    if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
+        return ref.current.offsetTop + ref.current.clientHeight / 2;
+    }
+    return 0;
+};
 
+const useUpdateNodeData = (id) => {
+    const updateNodeInternals = useUpdateNodeInternals();
     useEffect(() => {
-        if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
-            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
-            updateNodeInternals(data.id)
-        }
-    }, [data.id, ref, updateNodeInternals])
+        updateNodeInternals(id);
+    }, [id, updateNodeInternals]);
+};
 
-    useEffect(() => {
-        updateNodeInternals(data.id)
-    }, [data.id, position, updateNodeInternals])
+const FileInput = ({ data, inputParam, disabled = false }) => {
+    const updateValue = (newValue) => {
+        const updatedInputs = { ...data.inputs };
+        updatedInputs[inputParam.name] = newValue;
+        data.inputs = updatedInputs;
+    };
 
     return (
-        <div ref={ref}>
-            {inputAnchor && (
-                <>
-                    <CustomWidthTooltip placement='left' title={inputAnchor.type}>
-                        <Handle
-                            type='target'
-                            position={Position.Left}
-                            key={inputAnchor.id}
-                            id={inputAnchor.id}
-                            isValidConnection={(connection) => isValidConnection(connection, reactFlowInstance)}
-                            style={{
-                                height: 10,
-                                width: 10,
-                                backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
-                                top: position
-                            }}
-                        />
-                    </CustomWidthTooltip>
-                    <Box sx={{ p: 2 }}>
-                        <Typography>
-                            {inputAnchor.label}
-                            {!inputAnchor.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                        </Typography>
-                    </Box>
-                </>
-            )}
+        <File
+            disabled={disabled}
+            fileType={inputParam.fileType || "*"}
+            onChange={updateValue}
+            value={data.inputs[inputParam.name] ?? inputParam.default ?? "Choose a file to upload"}
+        />
+    );
+};
 
-            {inputParam && (
-                <>
-                    <Box sx={{ p: 2 }}>
-                        <Typography>
-                            {inputParam.label}
-                            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                        </Typography>
-                        {inputParam.type === 'file' && (
-                            <File
-                                disabled={disabled}
-                                fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
-                            />
-                        )}
-                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                            <Input
-                                disabled={disabled}
-                                inputParam={inputParam}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                            />
-                        )}
-                        {inputParam.type === 'options' && (
-                            <Dropdown
-                                disabled={disabled}
-                                name={inputParam.name}
-                                options={inputParam.options}
-                                onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'chose an option'}
-                            />
-                        )}
-                    </Box>
-                </>
-            )}
-        </div>
-    )
-}
+const StringInput = ({ data, inputParam, disabled = false }) => {
+    const updateValue = (newValue) => {
+        const updatedInputs = { ...data.inputs };
+        updatedInputs[inputParam.name] = newValue;
+        data.inputs = updatedInputs;
+    };
+
+    return (
+        <Input
+            disabled={disabled}
+            inputParam={inputParam}
+            onChange={updateValue}
+            value={data.inputs[inputParam.name] ?? inputParam.default ?? ""}
+        />
+    );
+};
+
+const OptionsInput = ({ data, inputParam, disabled = false }) => {
+    const updateValue = (newValue) => {
+        const updatedInputs = { ...data.inputs };
+        updatedInputs[inputParam.name] = newValue;
+        data.inputs = updatedInputs;
+    };
+
+    return (
+        <Dropdown
+            disabled={disabled}
+            name={inputParam.name}
+            options={inputParam.options}
+            onSelect={updateValue}
+            value={data.inputs[inputParam.name] ?? inputParam.default ?? "chose an option"}
+        />
+    );
+};
+
+const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
+    const theme = useTheme();
+    const ref = useRef(null);
+    const position = getNodePosition(ref);
+
+    useUpdateNodeData(data.id);
+
+    const nodeInputDOM = inputAnchor && (
+        <>
+            <CustomWidthTooltip placement="left" title={inputAnchor.type}>
+                <Handle
+                    type="target"
+                    position={Position.Left}
+                    key={inputAnchor.id}
+                    id={inputAnchor.id}
+                    isValidConnection={(connection) => isValidConnection(connection, ReactFlowInstance)}
+                    style={{
+                        height: 10,
+                        width: 10,
+                        backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                        top: position,
+                    }}
+                />
+            </CustomWidthTooltip>
+            <Box sx={{ p: 2 }}>
+                <Typography>
+                    {inputAnchor.label}
+                    {!inputAnchor.optional && <span style={{ color: "red" }}>&nbsp;*</span>}
+                </Typography>
+            </Box>
+        </>
+    ) || (
+        inputParam && (
+            <Box sx={{ p: 2 }}>
+                <Typography>
+                    {inputParam.label}
+                    {!inputParam.optional && <span style={{ color: "red" }}>&nbsp;*</span>}
+                </Typography>
+                {inputParam.type === "file" && <FileInput data={data} inputParam={inputParam} disabled={disabled} />}
+                {["string", "password", "number"].includes(inputParam.type) && (
+                    <StringInput data={data} inputParam={inputParam} disabled={disabled} />
+                )}
+                {inputParam.type === "options" && <OptionsInput data={data} inputParam={inputParam} disabled={disabled} />}
+            </Box>
+        )
+    );
+
+    return <div ref={ref}>{nodeInputDOM}</div>;
+};
 
 NodeInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
