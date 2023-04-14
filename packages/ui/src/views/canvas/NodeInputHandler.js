@@ -20,7 +20,49 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 
 // ===========================|| NodeInputHandler ||=========================== //
 
-const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
+const // Define a new component to handle input parameters from nodes
+const InputParamComponent = React.memo(({ inputParam, data, onChange }) => {
+
+    const handleInputChange = useCallback((value) => {
+        onChange(inputParam.name, value)
+    }, [onChange, inputParam.name])
+
+    if (inputParam.type === 'file') {
+        return (
+            <FileComponent
+                fileType={inputParam.fileType || '*'}
+                onChange={handleInputChange}
+                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+            />
+        )
+    }
+
+    if (inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') {
+        return (
+            <InputComponent
+                inputParam={inputParam}
+                onChange={handleInputChange}
+                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+            />
+        )
+    }
+
+    if (inputParam.type === 'options') {
+        return (
+            <DropdownComponent
+                name={inputParam.name}
+                options={inputParam.options}
+                onSelect={handleInputChange}
+                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+            />
+        )
+    }
+
+    return null
+})
+
+// The NodeInputHandler component can now focus only on rendering input handles and CustomWidthTooltip
+const NodeInputHandler = React.memo(({ inputAnchor, inputParam, data, disabled = false }) => {
     const theme = useTheme()
     const ref = useRef(null)
     const updateNodeInternals = useUpdateNodeInternals()
@@ -37,6 +79,17 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
     useEffect(() => {
         updateNodeInternals(data.id)
     }, [data.id, position, updateNodeInternals])
+
+    const handleInputChange = useCallback((name, value) => {
+        const newInputs = {
+            ...data.inputs,
+            [name]: value
+        }
+
+        setData({ ...data, inputs: newInputs })
+    }, [data])
+
+    const { inputs } = data
 
     return (
         <div ref={ref}>
@@ -67,43 +120,15 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
             )}
 
             {inputParam && (
-                <>
-                    <Box sx={{ p: 2 }}>
-                        <Typography>
-                            {inputParam.label}
-                            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                        </Typography>
-                        {inputParam.type === 'file' && (
-                            <File
-                                disabled={disabled}
-                                fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
-                            />
-                        )}
-                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                            <Input
-                                disabled={disabled}
-                                inputParam={inputParam}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                            />
-                        )}
-                        {inputParam.type === 'options' && (
-                            <Dropdown
-                                disabled={disabled}
-                                name={inputParam.name}
-                                options={inputParam.options}
-                                onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'chose an option'}
-                            />
-                        )}
-                    </Box>
-                </>
+                <InputParamComponent
+                    inputParam={inputParam}
+                    data={data}
+                    onChange={handleInputChange}
+                />
             )}
         </div>
     )
-}
+})
 
 NodeInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
