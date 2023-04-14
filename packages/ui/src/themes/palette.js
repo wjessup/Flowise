@@ -4,93 +4,152 @@
  */
 
 export default function themePalette(theme) {
+    const colors = {
+        primaryLight: 'light',
+        primaryMain: 'main',
+        primaryDark: 'dark',
+        primary200: 200,
+        primary800: 800,
+        secondaryLight: 'light',
+        secondaryMain: 'main',
+        secondaryDark: 'dark',
+        secondary200: 200,
+        secondary800: 800,
+        errorLight: 'light',
+        errorMain: 'main',
+        errorDark: 'dark',
+        orangeLight: 'light',
+        orangeMain: 'main',
+        orangeDark: 'dark',
+        warningLight: 'light',
+        warningMain: 'main',
+        warningDark: 'dark',
+        successLight: 'light',
+        success200: 200,
+        successMain: 'main',
+        successDark: 'dark',
+        grey50: 50,
+        grey100: 100,
+        grey200: 200,
+        grey300: 300,
+        darkTextSecondary: 500,
+        heading: 600,
+        darkTextPrimary: 700,
+        textDark: 900,
+        darkTextPrimary: 'light',
+        darkLevel1: 'main',
+        darkLevel2: 'dark',
+        darkBackground: 800,
+        darkPaper: 900,
+        paper: 'paper',
+        backgroundDefault: 'backgroundDefault'
+    };
+    
+    const getColor = (colorName) => {
+        const color = colors[colorName];
+        
+        if (color === undefined) {
+            return undefined;
+        }
+        
+        if (typeof color === 'string') {
+            return theme?.customization?.isDarkMode ?
+                theme?.colors?.[`dark${colorName}${color.charAt(0).toUpperCase()}${color.slice(1)}`] :
+                theme?.colors?.[`${colorName}${color.charAt(0).toUpperCase()}${color.slice(1)}`];
+        }
+        
+        return theme?.customization?.isDarkMode ?
+            theme?.colors?.[`dark${colorName}${color}`] :
+            theme?.colors?.[`${colorName}${color}`];
+    };
+    
     return {
         mode: theme?.customization?.navType,
         common: {
-            black: theme.colors?.darkPaper
+            black: getColor('darkPaper')
         },
         primary: {
-            light: theme.customization.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.primaryLight,
-            main: theme.colors?.primaryMain,
-            dark: theme.customization.isDarkMode ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark,
-            200: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.primary200,
-            800: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primary800
+            light: getColor('primary'+'Light'),
+            main: getColor('primary'+'Main'),
+            dark: getColor('primary'+'Dark'),
+            200: getColor('primary'+200),
+            800: getColor('primary'+800)
         },
         secondary: {
-            light: theme.customization.isDarkMode ? theme.colors?.darkSecondaryLight : theme.colors?.secondaryLight,
-            main: theme.customization.isDarkMode ? theme.colors?.darkSecondaryMain : theme.colors?.secondaryMain,
-            dark: theme.customization.isDarkMode ? theme.colors?.darkSecondaryDark : theme.colors?.secondaryDark,
-            200: theme.colors?.secondary200,
-            800: theme.colors?.secondary800
+            light: getColor('secondary'+'Light'),
+            main: getColor('secondary'+'Main'),
+            dark: getColor('secondary'+'Dark'),
+            200: getColor('secondary'+200),
+            800: getColor('secondary'+800)
         },
         error: {
-            light: theme.colors?.errorLight,
-            main: theme.colors?.errorMain,
-            dark: theme.colors?.errorDark
+            light: getColor('error'+'Light'),
+            main: getColor('error'+'Main'),
+            dark: getColor('error'+'Dark')
         },
         orange: {
-            light: theme.colors?.orangeLight,
-            main: theme.colors?.orangeMain,
-            dark: theme.colors?.orangeDark
+            light: getColor('orange'+'Light'),
+            main: getColor('orange'+'Main'),
+            dark: getColor('orange'+'Dark')
         },
         warning: {
-            light: theme.colors?.warningLight,
-            main: theme.colors?.warningMain,
-            dark: theme.colors?.warningDark
+            light: getColor('warning'+'Light'),
+            main: getColor('warning'+'Main'),
+            dark: getColor('warning'+'Dark')
         },
         success: {
-            light: theme.colors?.successLight,
-            200: theme.colors?.success200,
-            main: theme.colors?.successMain,
-            dark: theme.colors?.successDark
+            light: getColor('success'+'Light'),
+            200: getColor('success'+200),
+            main: getColor('success'+'Main'),
+            dark: getColor('success'+'Dark')
         },
         grey: {
-            50: theme.colors?.grey50,
-            100: theme.colors?.grey100,
-            200: theme.colors?.grey200,
-            300: theme.colors?.grey300,
-            500: theme.darkTextSecondary,
-            600: theme.heading,
-            700: theme.darkTextPrimary,
-            900: theme.textDark
+            50: getColor('grey'+50),
+            100: getColor('grey'+100),
+            200: getColor('grey'+200),
+            300: getColor('grey'+300),
+            500: getColor('darkText'+'Secondary'),
+            600: getColor('heading'),
+            700: getColor('darkText'+'Primary'),
+            900: getColor('textDark')
         },
         dark: {
-            light: theme.colors?.darkTextPrimary,
-            main: theme.colors?.darkLevel1,
-            dark: theme.colors?.darkLevel2,
-            800: theme.colors?.darkBackground,
-            900: theme.colors?.darkPaper
+            light: getColor('darkText'+'Primary'),
+            main: getColor('dark'+'Level1'),
+            dark: getColor('dark'+'Level2'),
+            800: getColor('dark'+'Background'),
+            900: getColor('dark'+'Paper')
         },
         text: {
-            primary: theme.darkTextPrimary,
-            secondary: theme.darkTextSecondary,
-            dark: theme.textDark,
-            hint: theme.colors?.grey100
+            primary: getColor('darkText'+'Primary'),
+            secondary: getColor('darkText'+'Secondary'),
+            dark: getColor('textDark'),
+            hint: getColor('grey'+100)
         },
         background: {
-            paper: theme.paper,
-            default: theme.backgroundDefault
+            paper: getColor('paper'),
+            default: getColor('backgroundDefault')
         },
         card: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimaryMain : theme.colors?.paper,
-            light: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.paper,
-            hover: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.paper
+            main: getColor('paper'),
+            light: getColor('primary'+200),
+            hover: getColor('primary'+800)
         },
         asyncSelect: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.grey50
+            main: getColor('darkPrimary'+800) || getColor('grey'+50)
         },
         canvasHeader: {
-            executionLight: theme.colors?.successLight,
-            executionDark: theme.colors?.successDark,
-            deployLight: theme.colors?.primaryLight,
-            deployDark: theme.colors?.primaryDark,
-            saveLight: theme.colors?.secondaryLight,
-            saveDark: theme.colors?.secondaryDark,
-            settingsLight: theme.colors?.grey300,
-            settingsDark: theme.colors?.grey700
+            executionLight: getColor('success'+'Light'),
+            executionDark: getColor('success'+'Dark'),
+            deployLight: getColor('primary'+'Light'),
+            deployDark: getColor('primary'+'Dark'),
+            saveLight: getColor('secondary'+'Light'),
+            saveDark: getColor('secondary'+'Dark'),
+            settingsLight: getColor('grey'+300),
+            settingsDark: getColor('grey'+700)
         },
         codeEditor: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primaryLight
+            main: getColor('primary'+'Light')
         }
-    }
+    };
 }
