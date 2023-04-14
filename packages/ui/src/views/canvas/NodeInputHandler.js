@@ -20,90 +20,101 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 
 // ===========================|| NodeInputHandler ||=========================== //
 
+const import { useState, useEffect, useRef, useContext } from 'react';
+import { useTheme } from '@mui/material/styles';
+import { Handle } from 'react-flow-renderer';
+import CustomWidthTooltip from '../../CustomWidthTooltip';
+import Input from '../Input';
+import Dropdown from '../Dropdown';
+import File from '../File';
+
 const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
-    const theme = useTheme()
-    const ref = useRef(null)
-    const updateNodeInternals = useUpdateNodeInternals()
-    const [position, setPosition] = useState(0)
-    const { reactFlowInstance } = useContext(flowContext)
+  const theme = useTheme();
+  const ref = useRef(null);
+  const [position, setPosition] = useState(null);
+  const { reactFlowInstance } = useContext(flowContext);
 
-    useEffect(() => {
-        if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
-            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
-            updateNodeInternals(data.id)
-        }
-    }, [data.id, ref, updateNodeInternals])
+  useEffect(() => {
+    if (ref.current) {
+      setPosition(ref.current.offsetTop + ref.current.clientHeight / 2);
+    }
+  }, [ref]);
 
-    useEffect(() => {
-        updateNodeInternals(data.id)
-    }, [data.id, position, updateNodeInternals])
+  useEffect(() => {
+    if (position !== null) {
+      updateNodeInternals(data.id);
+    }
+  }, [data.id, position]);
 
-    return (
-        <div ref={ref}>
-            {inputAnchor && (
-                <>
-                    <CustomWidthTooltip placement='left' title={inputAnchor.type}>
-                        <Handle
-                            type='target'
-                            position={Position.Left}
-                            key={inputAnchor.id}
-                            id={inputAnchor.id}
-                            isValidConnection={(connection) => isValidConnection(connection, reactFlowInstance)}
-                            style={{
-                                height: 10,
-                                width: 10,
-                                backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
-                                top: position
-                            }}
-                        />
-                    </CustomWidthTooltip>
-                    <Box sx={{ p: 2 }}>
-                        <Typography>
-                            {inputAnchor.label}
-                            {!inputAnchor.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                        </Typography>
-                    </Box>
-                </>
-            )}
+  const update = (newData) => {
+    data.inputs = { ...data.inputs, [inputParam.name]: newData };
+    updateNodeInternals(data.id);
+  };
+  
+  return (
+    <div ref={ref}>
+      {inputAnchor && (
+        <>
+          <CustomWidthTooltip placement='left' title={inputAnchor.type}>
+            <Handle
+              type='target'
+              position='left'
+              key={inputAnchor.id}
+              id={inputAnchor.id}
+              isValidConnection={(connection) => isValidConnection(connection, reactFlowInstance)}
+              style={{
+                height: 10,
+                width: 10,
+                backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                top: position || 0
+              }}
+            />
+          </CustomWidthTooltip>
+          <Box sx={{ p: 2 }}>
+            <Typography>
+              {inputAnchor.label}
+              {!inputAnchor.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+            </Typography>
+          </Box>
+        </>
+      )}
 
-            {inputParam && (
-                <>
-                    <Box sx={{ p: 2 }}>
-                        <Typography>
-                            {inputParam.label}
-                            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                        </Typography>
-                        {inputParam.type === 'file' && (
-                            <File
-                                disabled={disabled}
-                                fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
-                            />
-                        )}
-                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                            <Input
-                                disabled={disabled}
-                                inputParam={inputParam}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                            />
-                        )}
-                        {inputParam.type === 'options' && (
-                            <Dropdown
-                                disabled={disabled}
-                                name={inputParam.name}
-                                options={inputParam.options}
-                                onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'chose an option'}
-                            />
-                        )}
-                    </Box>
-                </>
-            )}
-        </div>
-    )
-}
+      {inputParam && (
+        <Box sx={{ p: 2 }}>
+          <Typography>
+            {inputParam.label}
+            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+          </Typography>
+          {inputParam.type === 'file' && (
+            <File
+              disabled={disabled}
+              fileType={inputParam.fileType || '*'}
+              onChange={update}
+              value={data.inputs[inputParam.name] || inputParam.default || 'Choose a file to upload'}
+            />
+          )}
+          {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
+            <Input
+              disabled={disabled}
+              inputParam={inputParam}
+              onChange={update}
+              value={data.inputs[inputParam.name] || inputParam.default || ''}
+            />
+          )}
+          {inputParam.type === 'options' && (
+            <Dropdown
+              disabled={disabled}
+              name={inputParam.name}
+              options={inputParam.options}
+              onSelect={update}
+              value={data.inputs[inputParam.name] || inputParam.default || 'Choose an option'}
+            />
+          )}
+        </Box>
+      )}
+    </div>
+  );
+};
 
 NodeInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
