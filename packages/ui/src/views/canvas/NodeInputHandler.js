@@ -20,23 +20,68 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 
 // ===========================|| NodeInputHandler ||=========================== //
 
+const // Helper function to update node internals
+const updateNode = (id, ref, updateNodeInternals) => {
+    if (ref && ref.current) {
+        const position = ref.current.offsetTop + ref.current.clientHeight / 2;
+        setPosition(position);
+        updateNodeInternals(id);
+    }
+}
+
+const getInputType = (inputParam) => {
+    const {name, type, default: defaultValue, fileType, optional, label, options} = inputParam;
+
+    switch (type) {
+        case 'file':
+            return (
+                <File
+                    fileType={fileType || '*'}
+                    onChange={(newValue) => setInputs(prev => ({ ...prev, [name]: newValue }))}
+                    value={inputs[name] ?? defaultValue ?? 'Choose a file to upload'}
+                    {...{disabled}}
+                />
+            );
+        case 'string':
+        case 'password':
+        case 'number':
+            return (
+                <Input
+                    inputParam={inputParam}
+                    onChange={(newValue) => setInputs(prev => ({ ...prev, [name]: newValue }))}
+                    value={inputs[name] ?? defaultValue ?? ''}
+                    {...{disabled}}
+                />
+            );
+        case 'options':
+            return (
+                <Dropdown
+                    name={name}
+                    options={options}
+                    onSelect={(newValue) => setInputs(prev => ({ ...prev, [name]: newValue }))}
+                    value={inputs[name] ?? defaultValue ?? 'chose an option'}
+                    {...{disabled}}
+                />
+            );
+        default:
+            return null;
+    }
+}
+
 const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) => {
-    const theme = useTheme()
-    const ref = useRef(null)
-    const updateNodeInternals = useUpdateNodeInternals()
-    const [position, setPosition] = useState(0)
-    const { reactFlowInstance } = useContext(flowContext)
+    const theme = useTheme();
+    const ref = useRef(null);
+    const [position, setPosition] = useState(0);
+    const { reactFlowInstance } = useContext(flowContext);
+    const [inputs, setInputs] = useState(data.inputs)
 
     useEffect(() => {
-        if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
-            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
-            updateNodeInternals(data.id)
-        }
-    }, [data.id, ref, updateNodeInternals])
+        updateNode(data.id, ref, useUpdateNodeInternals);
+    }, [data.id, ref]);
 
     useEffect(() => {
-        updateNodeInternals(data.id)
-    }, [data.id, position, updateNodeInternals])
+        updateNode(data.id, ref, useUpdateNodeInternals);
+    }, [inputs, ref]);
 
     return (
         <div ref={ref}>
@@ -53,7 +98,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
                                 height: 10,
                                 width: 10,
                                 backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
-                                top: position
+                                top: ref.current ? ref.current.offsetTop + ref.current.clientHeight / 2 : 0,
                             }}
                         />
                     </CustomWidthTooltip>
@@ -66,44 +111,19 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false }) =
                 </>
             )}
 
-            {inputParam && (
-                <>
-                    <Box sx={{ p: 2 }}>
-                        <Typography>
-                            {inputParam.label}
-                            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                        </Typography>
-                        {inputParam.type === 'file' && (
-                            <File
-                                disabled={disabled}
-                                fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
-                            />
-                        )}
-                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                            <Input
-                                disabled={disabled}
-                                inputParam={inputParam}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                            />
-                        )}
-                        {inputParam.type === 'options' && (
-                            <Dropdown
-                                disabled={disabled}
-                                name={inputParam.name}
-                                options={inputParam.options}
-                                onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'chose an option'}
-                            />
-                        )}
-                    </Box>
-                </>
-            )}
+            {inputParam &&
+                <Box sx={{ p: 2 }}>
+                    <Typography>
+                        {inputParam.label}
+                        {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                    </Typography>
+
+                    {getInputType(inputParam)}
+                </Box>
+            }
         </div>
-    )
-}
+    );
+};
 
 NodeInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
