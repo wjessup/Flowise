@@ -4,93 +4,84 @@
  */
 
 export default function themePalette(theme) {
-    return {
-        mode: theme?.customization?.navType,
-        common: {
-            black: theme.colors?.darkPaper
-        },
-        primary: {
-            light: theme.customization.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.primaryLight,
-            main: theme.colors?.primaryMain,
-            dark: theme.customization.isDarkMode ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark,
-            200: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.primary200,
-            800: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primary800
-        },
-        secondary: {
-            light: theme.customization.isDarkMode ? theme.colors?.darkSecondaryLight : theme.colors?.secondaryLight,
-            main: theme.customization.isDarkMode ? theme.colors?.darkSecondaryMain : theme.colors?.secondaryMain,
-            dark: theme.customization.isDarkMode ? theme.colors?.darkSecondaryDark : theme.colors?.secondaryDark,
-            200: theme.colors?.secondary200,
-            800: theme.colors?.secondary800
-        },
-        error: {
-            light: theme.colors?.errorLight,
-            main: theme.colors?.errorMain,
-            dark: theme.colors?.errorDark
-        },
-        orange: {
-            light: theme.colors?.orangeLight,
-            main: theme.colors?.orangeMain,
-            dark: theme.colors?.orangeDark
-        },
-        warning: {
-            light: theme.colors?.warningLight,
-            main: theme.colors?.warningMain,
-            dark: theme.colors?.warningDark
-        },
-        success: {
-            light: theme.colors?.successLight,
-            200: theme.colors?.success200,
-            main: theme.colors?.successMain,
-            dark: theme.colors?.successDark
-        },
-        grey: {
-            50: theme.colors?.grey50,
-            100: theme.colors?.grey100,
-            200: theme.colors?.grey200,
-            300: theme.colors?.grey300,
-            500: theme.darkTextSecondary,
-            600: theme.heading,
-            700: theme.darkTextPrimary,
-            900: theme.textDark
-        },
-        dark: {
-            light: theme.colors?.darkTextPrimary,
-            main: theme.colors?.darkLevel1,
-            dark: theme.colors?.darkLevel2,
-            800: theme.colors?.darkBackground,
-            900: theme.colors?.darkPaper
-        },
-        text: {
-            primary: theme.darkTextPrimary,
-            secondary: theme.darkTextSecondary,
-            dark: theme.textDark,
-            hint: theme.colors?.grey100
-        },
-        background: {
-            paper: theme.paper,
-            default: theme.backgroundDefault
-        },
-        card: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimaryMain : theme.colors?.paper,
-            light: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.paper,
-            hover: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.paper
-        },
-        asyncSelect: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.grey50
-        },
-        canvasHeader: {
-            executionLight: theme.colors?.successLight,
-            executionDark: theme.colors?.successDark,
-            deployLight: theme.colors?.primaryLight,
-            deployDark: theme.colors?.primaryDark,
-            saveLight: theme.colors?.secondaryLight,
-            saveDark: theme.colors?.secondaryDark,
-            settingsLight: theme.colors?.grey300,
-            settingsDark: theme.colors?.grey700
-        },
-        codeEditor: {
-            main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primaryLight
-        }
-    }
+   const generateColor = (prefix, isMain = false) => {
+      const darkMode = theme.customization.isDarkMode;    
+      const color = {
+         light: darkMode ? theme.colors[`dark${prefix}${isMain ? "" : "Light"}`] : theme.colors[`${prefix}${isMain ? "" : "Light"}`],
+         main: theme.colors[`${prefix}${isMain ? "" : "Main"}`],
+         dark: darkMode ? theme.colors[`dark${prefix}${isMain ? "" : "Dark"}`] : theme.colors[`${prefix}${isMain ? "" : "Dark"}`],
+         200: darkMode ? theme.colors[`dark${prefix}200`] : theme.colors[`${prefix}200`],
+         800: darkMode ? theme.colors[`dark${prefix}800`] : theme.colors[`${prefix}800`]
+      };
+      return color;   
+   }
+
+   const primaryColor = generateColor('primary', true);
+   const secondaryColor = generateColor('secondary', true);
+
+   return {
+      mode: theme?.customization?.navType,
+      common: {
+         black: theme.colors?.darkPaper
+      },
+      primary: primaryColor,
+      secondary: secondaryColor,
+      error: generateColor('error'),
+      orange: generateColor('orange'),
+      warning: generateColor('warning'),
+      success: {
+         light: theme.colors?.successLight,
+         200: theme.colors?.success200,
+         main: theme.colors?.successMain,
+         dark: theme.colors?.successDark
+      },
+      grey: {
+         50: theme.colors?.grey50,
+         100: theme.colors?.grey100,
+         200: theme.colors?.grey200,
+         300: theme.colors?.grey300,
+         500: theme.darkTextSecondary,
+         600: theme.heading,
+         700: theme.darkTextPrimary,
+         900: theme.textDark
+      },
+      dark: {
+         light: theme.colors?.darkTextPrimary,
+         main: theme.colors?.darkLevel1,
+         dark: theme.colors?.darkLevel2,
+         800: theme.colors?.darkBackground,
+         900: theme.colors?.darkPaper
+      },
+      text: {
+         primary: theme.darkTextPrimary,
+         secondary: theme.darkTextSecondary,
+         dark: theme.textDark,
+         hint: theme.colors?.grey100
+      },
+      background: {
+         paper: theme.paper,
+         default: theme.backgroundDefault
+      },
+      card: {
+         main: primaryColor.main,
+         light: generateColor('primary').light,
+         hover: primaryColor["800"]
+      },
+      asyncSelect: {
+         main: primaryColor["800"],
+      },
+      canvasHeader: {
+         executionLight: generateColor('success').light,
+         executionDark: generateColor('success').dark,
+         deployLight: primaryColor.light,
+         deployDark: primaryColor.dark,
+         saveLight: secondaryColor.light,
+         saveDark: secondaryColor.dark,
+         settingsLight: generateColor('grey').300,
+         settingsDark: generateColor('grey').700
+      },
+      codeEditor: {
+         main: primaryColor.light
+      }
+   }
 }
